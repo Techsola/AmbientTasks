@@ -14,7 +14,7 @@ namespace Techsola
     {
         private static readonly AsyncLocal<AmbientTaskContext> Context = new AsyncLocal<AmbientTaskContext>();
 
-        private static AmbientTaskContext CurrentContext => Context.Value ?? (Context.Value = new AmbientTaskContext(exceptionHandler: null));
+        private static AmbientTaskContext CurrentContext => Context.Value ??= new AmbientTaskContext(exceptionHandler: null);
 
         /// <summary>
         /// <para>
