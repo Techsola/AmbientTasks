@@ -26,7 +26,7 @@ namespace Techsola
         /// context which began tracking it.
         /// </para>
         /// </summary>
-        public static void BeginContext(Action<Exception> exceptionHandler = null)
+        public static void BeginContext(Action<Exception>? exceptionHandler = null)
         {
             Context.Value = new AmbientTaskContext(exceptionHandler);
         }
@@ -52,7 +52,7 @@ namespace Techsola
         /// by a continuation requesting <see cref="TaskContinuationOptions.ExecuteSynchronously"/>.)
         /// </para>
         /// </summary>
-        public static void Add(Task task)
+        public static void Add(Task? task)
         {
             switch (task?.Status)
             {
@@ -120,7 +120,7 @@ namespace Techsola
         /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
         /// </para>
         /// </summary>
-        public static void Post(SendOrPostCallback d, object state)
+        public static void Post(SendOrPostCallback? d, object? state)
         {
             // Install a default synchronization context if one does not exist
             Post(AsyncOperationManager.SynchronizationContext, d, state);
@@ -141,7 +141,7 @@ namespace Techsola
         /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
         /// </para>
         /// </summary>
-        public static void Post(SynchronizationContext synchronizationContext, SendOrPostCallback d, object state)
+        public static void Post(SynchronizationContext synchronizationContext, SendOrPostCallback? d, object? state)
         {
             if (synchronizationContext is null)
                 throw new ArgumentNullException(nameof(synchronizationContext));
@@ -183,7 +183,7 @@ namespace Techsola
         /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
         /// </para>
         /// </summary>
-        public static void Post(Action postCallbackAction)
+        public static void Post(Action? postCallbackAction)
         {
             // Install a default synchronization context if one does not exist
             Post(AsyncOperationManager.SynchronizationContext, postCallbackAction);
@@ -204,7 +204,7 @@ namespace Techsola
         /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
         /// </para>
         /// </summary>
-        public static void Post(SynchronizationContext synchronizationContext, Action postCallbackAction)
+        public static void Post(SynchronizationContext synchronizationContext, Action? postCallbackAction)
         {
             if (synchronizationContext is null)
                 throw new ArgumentNullException(nameof(synchronizationContext));

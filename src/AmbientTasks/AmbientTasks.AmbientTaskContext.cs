@@ -10,7 +10,7 @@ namespace Techsola
     {
         private sealed class AmbientTaskContext
         {
-            private readonly Action<Exception> exceptionHandler;
+            private readonly Action<Exception>? exceptionHandler;
 
             /// <summary>
             /// Doubles as a lockable object for all access to <see cref="exceptions"/>, <see cref="currentTaskCount"/>,
@@ -18,9 +18,9 @@ namespace Techsola
             /// </summary>
             private readonly List<Exception> exceptions = new List<Exception>();
             private int currentTaskCount;
-            private TaskCompletionSource<object> waitAllSource;
+            private TaskCompletionSource<object?>? waitAllSource;
 
-            public AmbientTaskContext(Action<Exception> exceptionHandler)
+            public AmbientTaskContext(Action<Exception>? exceptionHandler)
             {
                 this.exceptionHandler = exceptionHandler;
             }
@@ -71,7 +71,7 @@ namespace Techsola
 
             public void EndTask()
             {
-                TaskCompletionSource<object> sourceToComplete;
+                TaskCompletionSource<object?>? sourceToComplete;
                 Exception[] bufferedExceptions;
 
                 lock (exceptions)
@@ -106,13 +106,13 @@ namespace Techsola
 
                     if (currentTaskCount > 0)
                     {
-                        waitAllSource = new TaskCompletionSource<object>();
+                        waitAllSource = new TaskCompletionSource<object?>();
                         return waitAllSource.Task;
                     }
 
                     if (exceptions.Any())
                     {
-                        var source = new TaskCompletionSource<object>();
+                        var source = new TaskCompletionSource<object?>();
                         source.SetException(exceptions);
                         exceptions.Clear();
                         return source.Task;
