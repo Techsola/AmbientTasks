@@ -21,6 +21,23 @@ namespace Techsola
 
         [Test]
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void Adding_synchronously_failed_task_with_no_context_throws_AggregateException_on_current_SynchronizationContext()
+        {
+            var exception = new Exception();
+
+            using (SynchronizationContextAssert.ExpectSinglePost(postedAction =>
+            {
+                var aggregateException = Should.Throw<AggregateException>(postedAction);
+
+                aggregateException.InnerExceptions.ShouldBe(new[] { exception });
+            }))
+            {
+                AmbientTasks.Add(Task.FromException(exception));
+            }
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Adding_synchronously_failed_task_with_multiple_exceptions_and_no_context_throws_AggregateException_synchronously_with_all_exceptions()
         {
             var exceptions = new[]

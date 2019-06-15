@@ -63,7 +63,7 @@ namespace Techsola
                     break;
 
                 case TaskStatus.Faulted:
-                    OnTaskCompleted(task, state: (CurrentContext, SynchronizationContext.Current));
+                    OnTaskCompleted(task, state: (CurrentContext, SynchronizationContext.Current, taskWasStarted: false));
                     break;
 
                 default:
@@ -71,7 +71,7 @@ namespace Techsola
                     context.StartTask();
                     task.ContinueWith(
                         OnTaskCompleted,
-                        state: (context, SynchronizationContext.Current),
+                        state: (context, SynchronizationContext.Current, taskWasStarted: true),
                         CancellationToken.None,
                         TaskContinuationOptions.ExecuteSynchronously,
                         TaskScheduler.Default);
@@ -81,7 +81,7 @@ namespace Techsola
 
         private static void OnTaskCompleted(Task completedTask, object state)
         {
-            var (context, addSynchronizationContext) = ((AmbientTaskContext, SynchronizationContext))state;
+            var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state;
 
             if (completedTask.IsFaulted)
             {
@@ -97,7 +97,7 @@ namespace Techsola
                 }
             }
 
-            context.EndTask();
+            if (taskWasStarted) context.EndTask();
         }
 
         private static void OnTaskFaultWithoutHandler(object state)
