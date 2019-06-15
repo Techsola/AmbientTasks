@@ -54,17 +54,16 @@ namespace Techsola
         /// </summary>
         public static void Add(Task? task)
         {
-            switch (task?.Status)
+            if (task is null) return;
+
+            switch (task.Status)
             {
-                case null:
                 case TaskStatus.Canceled:
                 case TaskStatus.RanToCompletion:
                     break;
 
                 case TaskStatus.Faulted:
-#pragma warning disable CA1062 // Workaround for https://github.com/dotnet/roslyn-analyzers/issues/2586
                     OnTaskCompleted(task, state: (CurrentContext, SynchronizationContext.Current));
-#pragma warning restore CA1062
                     break;
 
                 default:
