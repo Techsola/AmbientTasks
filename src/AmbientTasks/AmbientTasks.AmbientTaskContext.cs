@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +25,7 @@ namespace Techsola
                 this.exceptionHandler = exceptionHandler;
             }
 
+            [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught and passed to the appropriate handler by design.")]
             public bool RecordAndTrySuppress(Exception exception)
             {
                 if (exceptionHandler is null)

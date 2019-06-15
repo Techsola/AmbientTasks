@@ -62,7 +62,9 @@ namespace Techsola
                     break;
 
                 case TaskStatus.Faulted:
+#pragma warning disable CA1062 // Workaround for https://github.com/dotnet/roslyn-analyzers/issues/2586
                     OnTaskCompleted(task, state: (CurrentContext, SynchronizationContext.Current));
+#pragma warning restore CA1062
                     break;
 
                 default:
@@ -71,7 +73,9 @@ namespace Techsola
                     task.ContinueWith(
                         OnTaskCompleted,
                         state: (context, SynchronizationContext.Current),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                     break;
             }
         }
