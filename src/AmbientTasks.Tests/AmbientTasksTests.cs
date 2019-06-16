@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Shouldly;
@@ -301,6 +302,52 @@ namespace Techsola
             source3.SetResult(null);
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
             AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void WaitAllAsync_should_have_single_AggregateException_with_all_exceptions_from_each_task()
+        {
+            var task1Exceptions = new[] { new Exception("Task 1 exception 1"), new Exception("Task 1 exception 2") };
+            var task2Exceptions = new[] { new Exception("Task 2 exception 1"), new Exception("Task 2 exception 2") };
+            var source1 = new TaskCompletionSource<object>();
+            var source2 = new TaskCompletionSource<object>();
+            AmbientTasks.Add(source1.Task);
+            AmbientTasks.Add(source2.Task);
+
+            var waitAllTask = AmbientTasks.WaitAllAsync();
+
+            source1.SetException(task1Exceptions);
+            source2.SetException(task2Exceptions);
+
+            waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
+
+            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+
+            aggregateException.InnerExceptions.ShouldBe(task1Exceptions.Concat(task2Exceptions));
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void WaitAllAsync_should_have_single_AggregateException_with_all_exceptions_from_each_task_all_faulted_synchronously()
+        {
+            var task1Exceptions = new[] { new Exception("Task 1 exception 1"), new Exception("Task 1 exception 2") };
+            var task2Exceptions = new[] { new Exception("Task 2 exception 1"), new Exception("Task 2 exception 2") };
+            var source1 = new TaskCompletionSource<object>();
+            var source2 = new TaskCompletionSource<object>();
+            AmbientTasks.Add(source1.Task);
+            AmbientTasks.Add(source2.Task);
+
+            source1.SetException(task1Exceptions);
+            source2.SetException(task2Exceptions);
+
+            var waitAllTask = AmbientTasks.WaitAllAsync();
+
+            waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
+
+            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+
+            aggregateException.InnerExceptions.ShouldBe(task1Exceptions.Concat(task2Exceptions));
         }
     }
 }

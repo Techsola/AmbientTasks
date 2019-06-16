@@ -13,10 +13,10 @@ namespace Techsola
             private readonly Action<Exception>? exceptionHandler;
 
             /// <summary>
-            /// Doubles as a lockable object for all access to <see cref="exceptions"/>, <see cref="currentTaskCount"/>,
+            /// Doubles as a lockable object for all access to <see cref="bufferedExceptions"/>, <see cref="currentTaskCount"/>,
             /// and <see cref="waitAllSource"/>.
             /// </summary>
-            private readonly List<Exception> exceptions = new List<Exception>();
+            private readonly List<Exception> bufferedExceptions = new List<Exception>();
             private int currentTaskCount;
             private TaskCompletionSource<object?>? waitAllSource;
 
@@ -26,23 +26,35 @@ namespace Techsola
             }
 
             [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught and passed to the appropriate handler by design.")]
-            public bool RecordAndTrySuppress(Exception exception)
+            public bool RecordAndTrySuppress(IReadOnlyCollection<Exception> exceptions)
             {
                 if (exceptionHandler is null)
                 {
-                    lock (exceptions)
-                        exceptions.Add(exception);
+                    lock (bufferedExceptions)
+                    {
+                        // Don't wrap yet. WaitAllAsync will wrap in AggregateException after collecting unhandled exceptions.
+                        bufferedExceptions.AddRange(exceptions);
+                    }
+
                     return false;
                 }
 
                 try
                 {
-                    exceptionHandler.Invoke(exception);
+                    // The top-level handler should not normally care about the exception type, so conditionally
+                    // wrapping should not be a pit of failure like it is in situations where you need to catch specific
+                    // exceptions.
+                    exceptionHandler.Invoke(exceptions.Count == 1
+                        ? exceptions.Single()
+                        : new AggregateException(exceptions));
                 }
                 catch (Exception handlerException)
                 {
-                    lock (exceptions)
-                        exceptions.Add(exception);
+                    lock (bufferedExceptions)
+                    {
+                        // Don't wrap yet. WaitAllAsync will wrap in AggregateException after collecting unhandled exceptions.
+                        bufferedExceptions.AddRange(exceptions);
+                    }
 
                     try
                     {
@@ -50,10 +62,10 @@ namespace Techsola
                     }
                     catch (Exception secondHandlerException)
                     {
-                        lock (exceptions)
+                        lock (bufferedExceptions)
                         {
-                            exceptions.Add(handlerException);
-                            exceptions.Add(secondHandlerException);
+                            bufferedExceptions.Add(handlerException);
+                            bufferedExceptions.Add(secondHandlerException);
                         }
                     }
                 }
@@ -63,7 +75,7 @@ namespace Techsola
 
             public void StartTask()
             {
-                lock (exceptions)
+                lock (bufferedExceptions)
                 {
                     currentTaskCount = checked(currentTaskCount + 1);
                 }
@@ -72,9 +84,9 @@ namespace Techsola
             public void EndTask()
             {
                 TaskCompletionSource<object?>? sourceToComplete;
-                Exception[] bufferedExceptions;
+                Exception[] endingExceptions;
 
-                lock (exceptions)
+                lock (bufferedExceptions)
                 {
                     var newCount = currentTaskCount - 1;
                     if (newCount < 0) throw new InvalidOperationException($"More calls to {nameof(EndTask)} than {nameof(StartTask)}.");
@@ -85,22 +97,22 @@ namespace Techsola
                     if (sourceToComplete is null) return; // No one is waiting
                     waitAllSource = null;
 
-                    bufferedExceptions = exceptions.ToArray();
-                    exceptions.Clear();
+                    endingExceptions = bufferedExceptions.ToArray();
+                    bufferedExceptions.Clear();
                 }
 
                 // Do not set the source inside the lock. Arbitrary user continuations may have been set on
                 // sourceToComplete.Task since it was previously returned from WaitAllAsync, and executing arbitrary
                 // user code within a lock is a very bad idea.
-                if (bufferedExceptions.Any())
-                    sourceToComplete.SetException(bufferedExceptions);
+                if (endingExceptions.Any())
+                    sourceToComplete.SetException(new AggregateException(endingExceptions));
                 else
                     sourceToComplete.SetResult(null);
             }
 
             public Task WaitAllAsync()
             {
-                lock (exceptions)
+                lock (bufferedExceptions)
                 {
                     if (waitAllSource != null) return waitAllSource.Task;
 
@@ -110,11 +122,11 @@ namespace Techsola
                         return waitAllSource.Task;
                     }
 
-                    if (exceptions.Any())
+                    if (bufferedExceptions.Any())
                     {
                         var source = new TaskCompletionSource<object?>();
-                        source.SetException(exceptions);
-                        exceptions.Clear();
+                        source.SetException(new AggregateException(bufferedExceptions));
+                        bufferedExceptions.Clear();
                         return source.Task;
                     }
                 }

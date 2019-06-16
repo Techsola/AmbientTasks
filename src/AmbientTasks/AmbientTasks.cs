@@ -86,8 +86,7 @@ namespace Techsola
             {
                 if (completedTask.IsFaulted)
                 {
-                    // Send AggregateException to registered global handler
-                    if (!context.RecordAndTrySuppress(completedTask.Exception))
+                    if (!context.RecordAndTrySuppress(completedTask.Exception.InnerExceptions))
                     {
                         var exceptionInfo = ExceptionDispatchInfo.Capture(completedTask.Exception);
 
@@ -163,7 +162,7 @@ namespace Techsola
             {
                 d.Invoke(invokeState);
             }
-            catch (Exception ex) when (context.RecordAndTrySuppress(ex))
+            catch (Exception ex) when (context.RecordAndTrySuppress(new[] { ex }))
             {
             }
             finally
@@ -226,7 +225,7 @@ namespace Techsola
             {
                 action.Invoke();
             }
-            catch (Exception ex) when (context.RecordAndTrySuppress(ex))
+            catch (Exception ex) when (context.RecordAndTrySuppress(new[] { ex }))
             {
             }
             finally
