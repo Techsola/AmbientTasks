@@ -82,22 +82,26 @@ namespace Techsola
         private static void OnTaskCompleted(Task completedTask, object state)
         {
             var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state;
-
-            if (completedTask.IsFaulted)
+            try
             {
-                // Send AggregateException to registered global handler
-                if (!context.RecordAndTrySuppress(completedTask.Exception))
+                if (completedTask.IsFaulted)
                 {
-                    var exceptionInfo = ExceptionDispatchInfo.Capture(completedTask.Exception);
+                    // Send AggregateException to registered global handler
+                    if (!context.RecordAndTrySuppress(completedTask.Exception))
+                    {
+                        var exceptionInfo = ExceptionDispatchInfo.Capture(completedTask.Exception);
 
-                    if (addSynchronizationContext is null)
-                        OnTaskFaultWithoutHandler(exceptionInfo);
-                    else
-                        addSynchronizationContext.Post(OnTaskFaultWithoutHandler, state: exceptionInfo);
+                        if (addSynchronizationContext is null)
+                            OnTaskFaultWithoutHandler(exceptionInfo);
+                        else
+                            addSynchronizationContext.Post(OnTaskFaultWithoutHandler, state: exceptionInfo);
+                    }
                 }
             }
-
-            if (taskWasStarted) context.EndTask();
+            finally
+            {
+                if (taskWasStarted) context.EndTask();
+            }
         }
 
         private static void OnTaskFaultWithoutHandler(object state)

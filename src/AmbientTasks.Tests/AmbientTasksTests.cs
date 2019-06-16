@@ -203,6 +203,21 @@ namespace Techsola
 
         [Test]
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void WaitAllAsync_waits_for_added_task_with_no_context_to_fault()
+        {
+            var source = new TaskCompletionSource<object>();
+            AmbientTasks.Add(source.Task);
+
+            var waitAllTask = AmbientTasks.WaitAllAsync();
+            waitAllTask.IsCompleted.ShouldBeFalse();
+
+            source.SetException(new Exception());
+            waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
+            AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_added_task_with_no_context_and_throws_exception_on_current_SynchronizationContext()
         {
             var source = new TaskCompletionSource<object>();
