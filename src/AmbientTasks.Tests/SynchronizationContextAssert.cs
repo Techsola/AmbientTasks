@@ -6,6 +6,13 @@ namespace Techsola
 {
     public static class SynchronizationContextAssert
     {
+        public static IDisposable ExpectNoPost()
+        {
+            var context = new MockSynchronizationContext(testPostedAction: null);
+
+            return Utils.WithTemporarySynchronizationContext(context);
+        }
+
         public static IDisposable ExpectSinglePost(Action<Action> testPostedAction)
         {
             if (testPostedAction is null) throw new ArgumentNullException(nameof(testPostedAction));
@@ -38,6 +45,7 @@ namespace Techsola
 
             public override void Post(SendOrPostCallback d, object state)
             {
+                if (testPostedAction is null) Assert.Fail("Expected no calls to SynchronizationContext.Post.");
                 if (ReceivedPost) Assert.Fail("Expected no more than one call to SynchronizationContext.Post.");
                 ReceivedPost = true;
 
