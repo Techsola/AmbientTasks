@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace Techsola
             }
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught and passed to the appropriate handler by design.")]
         private static void OnTaskCompleted(Task completedTask, object state)
         {
             var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state;
@@ -91,9 +93,19 @@ namespace Techsola
                         var exceptionInfo = ExceptionDispatchInfo.Capture(completedTask.Exception);
 
                         if (addSynchronizationContext is null)
+                        {
                             OnTaskFaultWithoutHandler(exceptionInfo);
+                        }
                         else
-                            addSynchronizationContext.Post(OnTaskFaultWithoutHandler, state: exceptionInfo);
+                        {
+                            try
+                            {
+                                addSynchronizationContext.Post(OnTaskFaultWithoutHandler, state: exceptionInfo);
+                            }
+                            catch (Exception postException) when (context.RecordAndTrySuppress(new[] { postException }))
+                            {
+                            }
+                        }
                     }
                 }
             }

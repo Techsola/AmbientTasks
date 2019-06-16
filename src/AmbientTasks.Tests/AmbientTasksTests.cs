@@ -638,5 +638,27 @@ namespace Techsola
 
             maxDepth.ShouldBe(2);
         }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void SynchronizationContext_that_throws_on_post_adds_exception_to_WaitAllAsync()
+        {
+            var source = new TaskCompletionSource<object>();
+
+            var postException = new Exception();
+            var taskException = new Exception();
+
+            using (SynchronizationContextAssert.ExpectSinglePost(postedAction => throw postException))
+            {
+                AmbientTasks.Add(source.Task);
+
+                var waitAllTask = AmbientTasks.WaitAllAsync();
+                source.SetException(taskException);
+                waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
+
+                var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+                aggregateException.InnerExceptions.ShouldBe(new[] { taskException, postException });
+            }
+        }
     }
 }
