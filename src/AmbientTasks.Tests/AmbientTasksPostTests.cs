@@ -8,46 +8,68 @@ namespace Techsola
 {
     public static class AmbientTasksPostTests
     {
-        [Test]
-        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
-        public static void Passed_delegate_may_be_null([Values] bool actionOverload)
+        public enum PostOverload
         {
-            if (actionOverload)
-                AmbientTasks.Post(null);
-            else
-                AmbientTasks.Post(null, state: null);
+            Action,
+            SendOrPostCallback
         }
 
-        [Test]
-        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
-        public static void Passed_synchronization_context_may_not_be_null([Values] bool actionOverload)
+        private static void AmbientTasksPost(PostOverload overload, Action action)
         {
-            if (actionOverload)
+            switch (overload)
             {
-                Should.Throw<ArgumentNullException>(
-                        () => AmbientTasks.Post(synchronizationContext: null, () => { }))
-                    .ParamName.ShouldBe("synchronizationContext");
-            }
-            else
-            {
-                Should.Throw<ArgumentNullException>(
-                        () => AmbientTasks.Post(synchronizationContext: null, state => { }, state: null))
-                    .ParamName.ShouldBe("synchronizationContext");
+                case PostOverload.Action:
+                    AmbientTasks.Post(action);
+                    break;
+                case PostOverload.SendOrPostCallback:
+                    AmbientTasks.Post(state => ((Action)state).Invoke(), state: action);
+                    break;
             }
         }
 
         [Test]
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
-        public static async Task Executes_asynchronously_if_current_synchronization_context_is_null([Values] bool actionOverload)
+        public static void Passed_delegate_may_be_null([Values] PostOverload overload)
+        {
+            switch (overload)
+            {
+                case PostOverload.Action:
+                    AmbientTasks.Post(null);
+                    break;
+                case PostOverload.SendOrPostCallback:
+                    AmbientTasks.Post(null, state: null);
+                    break;
+            }
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void Passed_synchronization_context_may_not_be_null([Values] PostOverload overload)
+        {
+            switch (overload)
+            {
+                case PostOverload.Action:
+                    Should.Throw<ArgumentNullException>(
+                            () => AmbientTasks.Post(synchronizationContext: null, () => { }))
+                        .ParamName.ShouldBe("synchronizationContext");
+                    break;
+                case PostOverload.SendOrPostCallback:
+                    Should.Throw<ArgumentNullException>(
+                            () => AmbientTasks.Post(synchronizationContext: null, state => { }, state: null))
+                        .ParamName.ShouldBe("synchronizationContext");
+                    break;
+            }
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static async Task Executes_asynchronously_if_current_synchronization_context_is_null([Values] PostOverload overload)
         {
             var source = new TaskCompletionSource<Thread>();
 
             using (Utils.WithTemporarySynchronizationContext(null))
             {
-                if (actionOverload)
-                    AmbientTasks.Post(() => source.SetResult(Thread.CurrentThread));
-                else
-                    AmbientTasks.Post(_ => source.SetResult(Thread.CurrentThread), null);
+                AmbientTasksPost(overload, () => source.SetResult(Thread.CurrentThread));
 
                 if (source.Task.Status == TaskStatus.RanToCompletion)
                 {
