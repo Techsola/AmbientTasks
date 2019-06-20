@@ -10,7 +10,7 @@ Benefits:
 
 - Test code can use a simple API to know exactly how long to wait for asynchronous processes triggered by non-async APIs before doing a final assert.
 
-- Exceptions are no longer missed in test code due to the test not waiting long enough or the exception being unhandled on a thread pool thread, or worse, overlapped and blamed on a subsequent unrelated test.
+- Exceptions are no longer missed in test code due to the test not waiting long enough or the exception being unhandled on a thread pool thread.
 
 - Unhandled task exceptions are sent to a chosen global handler immediately rather than waiting until the next garbage collection (arbitrarily far in the future) finalizes an orphaned task and triggers `TaskScheduler.UnobservedTaskException`.
 
