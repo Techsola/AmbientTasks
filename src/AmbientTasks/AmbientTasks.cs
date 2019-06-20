@@ -164,22 +164,38 @@ namespace Techsola
 
             var context = CurrentContext;
             context.StartTask();
-            synchronizationContext.Post(OnPost, (context, d, state));
+
+            var closure = new PostClosure<(SendOrPostCallback, object?)>(context, (d, state));
+
+            var postReturned = false;
+            try
+            {
+                synchronizationContext.Post(OnPost, closure);
+                postReturned = true;
+            }
+            finally
+            {
+                if (!postReturned && closure.TryClaimInvocation())
+                {
+                    context.EndTask();
+                }
+            }
         }
 
         private static void OnPost(object state)
         {
-            var (context, d, invokeState) = ((AmbientTaskContext, SendOrPostCallback, object))state;
+            var closure = (PostClosure<(SendOrPostCallback d, object? state)>)state;
+            if (!closure.TryClaimInvocation()) return;
             try
             {
-                d.Invoke(invokeState);
+                closure.State.d.Invoke(closure.State.state);
             }
-            catch (Exception ex) when (context.RecordAndTrySuppress(new[] { ex }))
+            catch (Exception ex) when (closure.Context.RecordAndTrySuppress(new[] { ex }))
             {
             }
             finally
             {
-                context.EndTask();
+                closure.Context.EndTask();
             }
         }
 
@@ -227,22 +243,38 @@ namespace Techsola
 
             var context = CurrentContext;
             context.StartTask();
-            synchronizationContext.Post(OnPostAction, (context, postCallbackAction));
+
+            var closure = new PostClosure<Action>(context, postCallbackAction);
+
+            var postReturned = false;
+            try
+            {
+                synchronizationContext.Post(OnPostAction, closure);
+                postReturned = true;
+            }
+            finally
+            {
+                if (!postReturned && closure.TryClaimInvocation())
+                {
+                    context.EndTask();
+                }
+            }
         }
 
         private static void OnPostAction(object state)
         {
-            var (context, action) = ((AmbientTaskContext, Action))state;
+            var closure = (PostClosure<Action>)state;
+            if (!closure.TryClaimInvocation()) return;
             try
             {
-                action.Invoke();
+                closure.State.Invoke();
             }
-            catch (Exception ex) when (context.RecordAndTrySuppress(new[] { ex }))
+            catch (Exception ex) when (closure.Context.RecordAndTrySuppress(new[] { ex }))
             {
             }
             finally
             {
-                context.EndTask();
+                closure.Context.EndTask();
             }
         }
     }

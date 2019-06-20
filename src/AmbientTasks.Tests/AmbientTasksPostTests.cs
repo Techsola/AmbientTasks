@@ -290,5 +290,79 @@ namespace Techsola
 
             waitAllTask.Status.ShouldBe(TaskStatus.RanToCompletion);
         }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void Delegate_is_abandoned_if_SynchronizationContext_post_throws_before_invoking_delegate([Values] PostOverload overload)
+        {
+            var postedAction = (Action)null;
+
+            using (SynchronizationContextAssert.ExpectSinglePost(p =>
+            {
+                postedAction = p;
+                throw new Exception();
+            }))
+            {
+                Should.Throw<Exception>(() => AmbientTasksPost(overload, () => Assert.Fail("The delegate should be abandoned.")));
+            }
+
+            AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
+
+            postedAction.Invoke();
+
+            AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void Subsequent_invocations_by_SynchronizationContext_are_ignored_when_successful([Values] PostOverload overload)
+        {
+            var postedAction = (Action)null;
+            var callCount = 0;
+
+            using (SynchronizationContextAssert.ExpectSinglePost(p =>
+            {
+                postedAction = p;
+            }))
+            {
+                AmbientTasksPost(overload, () => callCount++);
+            }
+
+            callCount.ShouldBe(0);
+            postedAction.Invoke();
+            callCount.ShouldBe(1);
+
+            postedAction.Invoke();
+
+            callCount.ShouldBe(1);
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void Subsequent_invocations_by_SynchronizationContext_are_ignored_when_user_code_throws([Values] PostOverload overload)
+        {
+            var postedAction = (Action)null;
+            var callCount = 0;
+
+            using (SynchronizationContextAssert.ExpectSinglePost(p =>
+            {
+                postedAction = p;
+            }))
+            {
+                AmbientTasksPost(overload, () =>
+                {
+                    callCount++;
+                    throw new Exception();
+                });
+            }
+
+            callCount.ShouldBe(0);
+            Should.Throw<Exception>(postedAction);
+            callCount.ShouldBe(1);
+
+            postedAction.Invoke();
+
+            callCount.ShouldBe(1);
+        }
     }
 }
