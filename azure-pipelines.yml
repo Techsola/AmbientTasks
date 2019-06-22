@@ -1,0 +1,33 @@
+trigger:
+  branches:
+    include: [ '*' ]
+    exclude: [ 'refs/tags/*' ]
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: PowerShell@2
+  displayName: Build and test
+  inputs:
+    targetType: filePath
+    filePath: ./build.ps1
+  env:
+    CODECOV_TOKEN: $(CODECOV_TOKEN)
+
+- task: PublishTestResults@2
+  inputs:
+    testRunTitle: net472
+    testResultsFormat: VSTest
+    testResultsFiles: artifacts\Test results\net472.trx
+
+- task: PublishTestResults@2
+  inputs:
+    testRunTitle: netcoreapp2.1
+    testResultsFormat: VSTest
+    testResultsFiles: artifacts\Test results\netcoreapp2.1.trx
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: artifacts\Test results
+    ArtifactName: Test results

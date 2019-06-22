@@ -1,4 +1,4 @@
-# AmbientTasks
+# AmbientTasks [![Build Status](https://dev.azure.com/Techsola/AmbientTasks/_apis/build/status/AmbientTasks%20CI?branchName=master)](https://dev.azure.com/Techsola/AmbientTasks/_build/latest?definitionId=1&branchName=master) [![codecov](https://codecov.io/gh/Techsola/AmbientTasks/branch/master/graph/badge.svg)](https://codecov.io/gh/Techsola/AmbientTasks)
 
 Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and `async void`. Easy to produce and consume, and test-friendly.
 
