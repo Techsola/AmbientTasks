@@ -102,7 +102,7 @@ public void Foo_combo_box_opens_when_it_receives_focus()
     var form = new MainForm(...);
     form.Show();
 
-    WindowsFormsUtils.RunWithMessagePump(async =>
+    WindowsFormsUtils.RunWithMessagePump(async () =>
     {
         form.FooComboBox.Focus();
 
@@ -130,8 +130,9 @@ Use `AmbientTasks.Add` and `Post` any time a non-async call starts off an asynch
 private async void SomeEventHandler(object sender, EventArgs e)
 {
     // Update UI
-    // ...
+
     var info = await GetInfoAsync(...);
+
     // Update UI using info
 }
 ```
@@ -142,10 +143,11 @@ private async void SomeEventHandler(object sender, EventArgs e)
 private void SomeEventHandler(object sender, EventArgs e)
 {
     // Update UI
-    // ...
+
     AmbientTasks.Add(async () =>
     {
         var info = await GetInfoAsync(...);
+
         // Update UI using info
     });
 }
