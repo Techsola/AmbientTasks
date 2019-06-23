@@ -18,3 +18,12 @@ function Get-BuildMetadata {
 
     return $metadata
 }
+
+function Update-CiServerBuildName([Parameter(Mandatory=$true)] [string] $BuildName) {
+    if ($env:TF_BUILD) {
+        Write-Output '##vso[build.updatebuildnumber]' + $BuildName
+    }
+    elseif ($env.CI) {
+        throw 'Build name updating is not implemented for this CI server.'
+    }
+}

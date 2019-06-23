@@ -19,6 +19,7 @@ $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Micr
 
 . $PSScriptRoot\build\Get-DetectedCiVersion.ps1
 $versionInfo = Get-DetectedCiVersion $Release
+Update-CiServerBuildName $versionInfo.ProductVersion
 Write-Host "Building using version $($versionInfo.ProductVersion)"
 
 # Build and pack
