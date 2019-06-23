@@ -31,3 +31,8 @@ steps:
   inputs:
     PathtoPublish: artifacts\Test results
     ArtifactName: Test results
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: artifacts\Packages
+    ArtifactName: NuGet package
