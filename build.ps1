@@ -1,23 +1,39 @@
+Param(
+    [switch] $Release
+)
+
 $ErrorActionPreference = 'Stop'
 
+# Options
 $configuration = 'Release'
 $artifactsDir = Join-Path (Resolve-Path .) 'artifacts'
 $packagesDir = Join-Path $artifactsDir 'Packages'
 $testResultsDir = Join-Path $artifactsDir 'Test results'
 
+# Detection
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $visualStudioInstallation = & $vswhere -latest -version [16,] -requires Microsoft.Component.MSBuild -products * -property installationPath
 if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Studio 2019 or newer.' }
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
 $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
 
-$commit = (git rev-parse head)
+. build\Get-DetectedCiVersion.ps1
+$versionInfo = Get-DetectedCiVersion $Release
+Write-Host "Building using version $($versionInfo.ProductVersion)"
 
-# Build
-& $msbuild /restore /p:Configuration=$configuration /v:minimal
+# Build and pack
+$msbuildArgs = @(
+    '/p:PackageOutputPath=' + $packagesDir
+    '/p:RepositoryCommit=' + $versionInfo.CommitHash
+    '/p:Version=' + $versionInfo.ProductVersion
+    '/p:PackageVersion=' + $versionInfo.PackageVersion
+    '/p:AssemblyVersion=' + $versionInfo.FileVersion
+    '/p:Configuration=' + $configuration
+    '/v:minimal'
+)
 
-# Pack
-& $msbuild /t:pack /p:NoBuild=true /p:Configuration=$configuration /v:minimal /p:PackageOutputPath=$packagesDir /p:RepositoryCommit=$commit
+& $msbuild /t:build /restore @msbuildArgs
+& $msbuild /t:pack /p:NoBuild=true @msbuildArgs
 
 # Test
 dotnet tool install altcover.global --tool-path tools
