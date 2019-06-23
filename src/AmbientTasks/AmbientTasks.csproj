@@ -9,6 +9,8 @@
     <Copyright>Copyright © 2019 Technology Solutions Associates</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Techsola/AmbientTasks</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Techsola/AmbientTasks</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageTags>async task void post background ambient scope wait track handle error</PackageTags>
     <Description>Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and async void. Easy to produce and consume, and test-friendly.</Description>
 

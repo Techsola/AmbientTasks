@@ -11,11 +11,13 @@ if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Stud
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
 $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
 
+$commit = (git rev-parse head)
+
 # Build
 & $msbuild /restore /p:Configuration=$configuration /v:minimal
 
 # Pack
-& $msbuild /t:pack /p:NoBuild=true /p:Configuration=$configuration /v:minimal /p:PackageOutputPath=$packagesDir
+& $msbuild /t:pack /p:NoBuild=true /p:Configuration=$configuration /v:minimal /p:PackageOutputPath=$packagesDir /p:RepositoryCommit=$commit
 
 # Test
 dotnet tool install altcover.global --tool-path tools
