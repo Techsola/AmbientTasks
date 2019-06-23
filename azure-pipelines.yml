@@ -36,3 +36,12 @@ steps:
   inputs:
     PathtoPublish: artifacts\Packages
     ArtifactName: NuGet package
+
+- task: NuGetCommand@2
+  displayName: Publish to MyGet
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  inputs:
+    command: push
+    packagesToPush: 'artifacts\Packages\*.nupkg'
+    nuGetFeedType: external
+    publishFeedCredentials: MyGet
