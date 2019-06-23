@@ -1,3 +1,5 @@
+. $PSScriptRoot\CiServerIntegration.ps1
+
 function Get-VersionPrefixFromTags {
     function Get-VersionPrefix([Parameter(Mandatory=$true)] [string] $Tag) {
         # Start the search at index 6, skipping 1 for the `v` and 5 because no valid semantic version can have a suffix sooner than `N.N.N`.
@@ -25,27 +27,6 @@ function Get-VersionPrefixFromTags {
     }
 
     # No release has been tagged, so the initial version should be whatever the source files currently contain.
-}
-
-class BuildMetadata {
-    [int] $BuildNumber
-    [System.Nullable[int]] $PullRequestNumber
-    [string] $BranchName
-}
-
-function Get-BuildMetadata {
-    $metadata = [BuildMetadata]::new()
-
-    if ($env:TF_BUILD) {
-        $metadata.BuildNumber = $env:Build_BuildId
-        $metadata.PullRequestNumber = $env:System_PullRequest_PullRequestNumber
-        $metadata.BranchName = $env:Build_SourceBranchName
-    }
-    elseif ($env.CI) {
-        throw 'Build metadata detection is not implemented for this CI server.'
-    }
-
-    return $metadata
 }
 
 function XmlPeek(

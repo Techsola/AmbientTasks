@@ -17,7 +17,7 @@ if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Stud
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
 $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
 
-. build\Get-DetectedCiVersion.ps1
+. $PSScriptRoot\build\Get-DetectedCiVersion.ps1
 $versionInfo = Get-DetectedCiVersion $Release
 Write-Host "Building using version $($versionInfo.ProductVersion)"
 
