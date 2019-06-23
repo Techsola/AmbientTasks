@@ -11,16 +11,16 @@ $packagesDir = Join-Path $artifactsDir 'Packages'
 $testResultsDir = Join-Path $artifactsDir 'Test results'
 
 # Detection
+. $PSScriptRoot\build\Get-DetectedCiVersion.ps1
+$versionInfo = Get-DetectedCiVersion $Release
+Update-CiServerBuildName $versionInfo.ProductVersion
+Write-Host "Building using version $($versionInfo.ProductVersion)"
+
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $visualStudioInstallation = & $vswhere -latest -version [16,] -requires Microsoft.Component.MSBuild -products * -property installationPath
 if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Studio 2019 or newer.' }
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
 $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
-
-. $PSScriptRoot\build\Get-DetectedCiVersion.ps1
-$versionInfo = Get-DetectedCiVersion $Release
-Update-CiServerBuildName $versionInfo.ProductVersion
-Write-Host "Building using version $($versionInfo.ProductVersion)"
 
 # Build and pack
 $msbuildArgs = @(
