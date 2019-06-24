@@ -553,6 +553,35 @@ namespace Techsola
 
         [Test]
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static async Task BeginContext_handler_flows_into_new_thread()
+        {
+            var source = new TaskCompletionSource<object>();
+            var watcher = new CallbackWatcher();
+
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    using (watcher.ExpectCallback())
+                        AmbientTasks.Add(Task.FromException(new Exception()));
+
+                    source.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    source.SetException(ex);
+                }
+            });
+
+            AmbientTasks.BeginContext(ex => watcher.OnCallback());
+
+            thread.Start();
+
+            await source.Task;
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static async Task BeginContext_handler_flows_into_ThreadPool_QueueUserWorkItem()
         {
             var watcher = new CallbackWatcher();
