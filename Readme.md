@@ -144,12 +144,14 @@ private void SomeEventHandler(object sender, EventArgs e)
 {
     // Update UI
 
-    AmbientTasks.Add(async () =>
+    AmbientTasks.Add(UpdateInfoAsync());
+
+    async Task UpdateInfoAsync()
     {
         var info = await GetInfoAsync(...);
 
         // Update UI using info
-    });
+    }
 }
 ```
 
