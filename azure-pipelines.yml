@@ -16,23 +16,27 @@ steps:
     CODECOV_TOKEN: $(CODECOV_TOKEN)
 
 - task: PublishTestResults@2
+  displayName: Publish test results (net472)
   inputs:
     testRunTitle: net472
     testResultsFormat: VSTest
     testResultsFiles: artifacts\Test results\net472.trx
 
 - task: PublishTestResults@2
+  displayName: Publish test results (netcoreapp2.1)
   inputs:
     testRunTitle: netcoreapp2.1
     testResultsFormat: VSTest
     testResultsFiles: artifacts\Test results\netcoreapp2.1.trx
 
 - task: PublishBuildArtifacts@1
+  displayName: Publish test results artifact
   inputs:
     PathtoPublish: artifacts\Test results
     ArtifactName: Test results
 
 - task: PublishBuildArtifacts@1
+  displayName: Publish NuGet package artifact
   inputs:
     PathtoPublish: artifacts\Packages
     ArtifactName: NuGet package
