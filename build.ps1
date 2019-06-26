@@ -1,5 +1,7 @@
 Param(
-    [switch] $Release
+    [switch] $Release,
+    [string] $SigningCertThumbprint,
+    [string] $TimestampServer
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,7 +24,6 @@ if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Stud
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
 $vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
 
-# Build and pack
 $msbuildArgs = @(
     '/p:PackageOutputPath=' + $packagesDir
     '/p:RepositoryCommit=' + $versionInfo.CommitHash
@@ -33,10 +34,34 @@ $msbuildArgs = @(
     '/v:minimal'
 )
 
+# Build
 & $msbuild /t:build /restore @msbuildArgs
 if ($LastExitCode) { exit 1 }
+
+if ($SigningCertThumbprint) {
+    . build\SignTool.ps1
+    SignTool $SigningCertThumbprint $TimestampServer (
+        Get-ChildItem src\AmbientTasks\bin\$configuration -Recurse -Include AmbientTasks.dll)
+}
+
+# Pack
+Remove-Item -Recurse -Force $packagesDir -ErrorAction Ignore
+
 & $msbuild /t:pack /p:NoBuild=true @msbuildArgs
 if ($LastExitCode) { exit 1 }
+
+if ($SigningCertThumbprint) {
+    # Hoping to use dotnet tool instead of this (https://github.com/NuGet/Home/issues/8263)
+    $nuget = 'tools\nuget.exe'
+    if (-not (Test-Path $nuget)) {
+        New-Item -ItemType Directory -Force -Path tools
+        Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nuget
+    }
+
+    foreach ($package in Get-ChildItem -Recurse $packagesDir -Include *.nupkg) {
+        & $nuget sign $package -CertificateFingerprint $SigningCertThumbprint -Timestamper $TimestampServer
+    }
+}
 
 # Test
 dotnet tool install altcover.global --tool-path tools
