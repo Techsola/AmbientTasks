@@ -25,9 +25,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ApiContractGenerator.MSBuild" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3" PrivateAssets="all" />
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApiContractAssembly Include="$(TargetPath)" />
   </ItemGroup>
 
 </Project>
