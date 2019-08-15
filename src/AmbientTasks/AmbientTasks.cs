@@ -49,8 +49,8 @@ namespace Techsola
         /// faulted and an exception handler is currently registered (see <see cref="BeginContext"/>), the handler will
         /// receive the task’s <see cref="AggregateException"/>. If no handler has been registered, the <see
         /// cref="AggregateException"/> will be rethrown on the <see cref="SynchronizationContext"/> that was current
-        /// when <see cref="Add"/> was called. (If there was no synchronization context, it will be rethrown immediately
-        /// by a continuation requesting <see cref="TaskContinuationOptions.ExecuteSynchronously"/>.)
+        /// when <see cref="Add(Task)"/> was called. (If there was no synchronization context, it will be rethrown
+        /// immediately by a continuation requesting <see cref="TaskContinuationOptions.ExecuteSynchronously"/>.)
         /// </para>
         /// </summary>
         public static void Add(Task? task)
@@ -118,6 +118,48 @@ namespace Techsola
         private static void OnTaskFaultWithoutHandler(object? state)
         {
             ((ExceptionDispatchInfo)state!).Throw();
+        }
+
+        /// <summary>
+        /// <para>
+        /// Invokes a delegate immediately and begins tracking the returned <see cref="Task"/> so that any exception is
+        /// handled and so that <see cref="WaitAllAsync"/> waits for its completion. If the delegate throws rather than
+        /// returning a task, the exception is wrapped in a <see cref="Task"/> instance and treated the same as if the
+        /// task had been returned from the delegate.
+        /// </para>
+        /// <para>
+        /// Once passed to this method, a task’s exception will never be unobserved. If the task faults or is already
+        /// faulted and an exception handler is currently registered (see <see cref="BeginContext"/>), the handler will
+        /// receive the task’s <see cref="AggregateException"/>. If no handler has been registered, the <see
+        /// cref="AggregateException"/> will be rethrown on the <see cref="SynchronizationContext"/> that was current
+        /// when <see cref="Add(Func{Task})"/> was called. (If there was no synchronization context, it will be rethrown
+        /// immediately by a continuation requesting <see cref="TaskContinuationOptions.ExecuteSynchronously"/>.)
+        /// </para>
+        /// </summary>
+        public static void Add(Func<Task>? functionToInvoke)
+        {
+            if (functionToInvoke is null) return;
+
+            Add(InvokeWithExceptionsWrapped(functionToInvoke));
+        }
+
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions must be wrapped.")]
+        private static Task InvokeWithExceptionsWrapped(Func<Task> function)
+        {
+            try
+            {
+                return function.Invoke();
+            }
+            catch (OperationCanceledException)
+            {
+                var source = new TaskCompletionSource<object?>();
+                source.SetCanceled();
+                return source.Task;
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException(ex);
+            }
         }
 
         /// <summary>

@@ -10,6 +10,8 @@ namespace Techsola
         [System.Runtime.CompilerServices.NullableContext(2)]
         public static void Add(System.Threading.Tasks.Task task);
 
+        public static void Add([System.Runtime.CompilerServices.Nullable(new byte[] { 2, 1 })] System.Func<System.Threading.Tasks.Task> functionToInvoke);
+
         public static void BeginContext([System.Runtime.CompilerServices.Nullable(new byte[] { 2, 1 })] System.Action<System.Exception> exceptionHandler = default);
 
         [System.Runtime.CompilerServices.NullableContext(2)]

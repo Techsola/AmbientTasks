@@ -117,7 +117,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Adding_null_task_is_noop()
         {
-            AmbientTasks.Add(null);
+            AmbientTasks.Add((Task?)null);
 
             AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
         }
