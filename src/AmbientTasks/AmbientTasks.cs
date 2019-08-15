@@ -13,9 +13,18 @@ namespace Techsola
     /// </summary>
     public static partial class AmbientTasks
     {
+        /// <summary>
+        /// This is <see langword="null"/> unless the <see cref="Experimental.EnableGlobalFallbackContext"/> feature has
+        /// been activated.
+        /// </summary>
+        private static AmbientTaskContext? experimentalFallbackContext;
+
         private static readonly AsyncLocal<AmbientTaskContext> Context = new AsyncLocal<AmbientTaskContext>();
 
-        private static AmbientTaskContext CurrentContext => Context.Value ??= new AmbientTaskContext(exceptionHandler: null);
+        private static AmbientTaskContext CurrentContext
+        {
+            get => Context.Value ??= experimentalFallbackContext ?? new AmbientTaskContext(exceptionHandler: null);
+        }
 
         /// <summary>
         /// <para>
@@ -37,7 +46,19 @@ namespace Techsola
         /// thrown by an exception handler, will be included as inner exceptions of the <see cref="Task.Exception"/>
         /// property.
         /// </summary>
-        public static Task WaitAllAsync() => CurrentContext.WaitAllAsync();
+        public static Task WaitAllAsync()
+        {
+            var context = CurrentContext;
+
+            if (context == experimentalFallbackContext)
+            {
+                throw new InvalidOperationException(
+                    $"When {nameof(AmbientTasks)}.{nameof(Experimental)}.{nameof(Experimental.EnableGlobalFallbackContext)} " +
+                    $"is used, {nameof(WaitAllAsync)} must not be used with its shared global fallback context.");
+            }
+
+            return context.WaitAllAsync();
+        }
 
         /// <summary>
         /// <para>

@@ -24,5 +24,11 @@ namespace Techsola
         public static void Post(System.Threading.SynchronizationContext synchronizationContext, [System.Runtime.CompilerServices.Nullable(2)] System.Action postCallbackAction);
 
         public static System.Threading.Tasks.Task WaitAllAsync();
+
+        [System.Runtime.CompilerServices.NullableContext(0)]
+        public static class Experimental
+        {
+            public static void EnableGlobalFallbackContext([System.Runtime.CompilerServices.Nullable(new byte[] { 2, 1 })] System.Action<System.Exception> exceptionHandler);
+        }
     }
 }
