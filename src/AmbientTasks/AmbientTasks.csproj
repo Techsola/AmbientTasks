@@ -15,6 +15,7 @@
     <Description>Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and async void. Easy to produce and consume, and test-friendly.</Description>
 
     <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
     <Features>strict</Features>
     <WarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</WarningsAsErrors>
     <SignAssembly>true</SignAssembly>
@@ -24,12 +25,6 @@
     <EmbedAllSources>true</EmbedAllSources>
     <!-- Include symbol files (*.pdb) in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-
-    <!-- Needed prior to VS 16.2 Preview 1 -->
-    <NullableReferenceTypes>true</NullableReferenceTypes>
-    <NullableContextOptions>enable</NullableContextOptions>
-    <!-- Needed from VS 16.2 Preview 1 forwards -->
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
