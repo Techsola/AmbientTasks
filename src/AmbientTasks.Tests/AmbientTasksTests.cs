@@ -48,7 +48,7 @@ namespace Techsola
                 new Exception()
             };
 
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             source.SetException(exceptions);
 
             var aggregateException = Should.Throw<AggregateException>(() => AmbientTasks.Add(source.Task));
@@ -66,7 +66,7 @@ namespace Techsola
                 new Exception()
             };
 
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             source.SetException(exceptions);
 
             using (SynchronizationContextAssert.ExpectSinglePost(postedAction =>
@@ -135,7 +135,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Adding_synchronously_canceled_task_is_noop()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             source.SetCanceled();
             AmbientTasks.Add(source.Task);
 
@@ -146,7 +146,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_added_task_with_no_context_to_succeed()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source.Task);
 
             var waitAllTask = AmbientTasks.WaitAllAsync();
@@ -161,7 +161,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_added_task_with_no_context_to_cancel()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source.Task);
 
             var waitAllTask = AmbientTasks.WaitAllAsync();
@@ -176,8 +176,8 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_does_not_reset_until_all_tasks_have_completed()
         {
-            var source1 = new TaskCompletionSource<object>();
-            var source2 = new TaskCompletionSource<object>();
+            var source1 = new TaskCompletionSource<object?>();
+            var source2 = new TaskCompletionSource<object?>();
 
             AmbientTasks.Add(source1.Task);
             var waitTaskSeenAfterFirstAdd = AmbientTasks.WaitAllAsync();
@@ -207,7 +207,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_added_task_with_no_context_to_fault()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source.Task);
 
             var waitAllTask = AmbientTasks.WaitAllAsync();
@@ -222,7 +222,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_added_task_with_no_context_and_throws_exception_on_current_SynchronizationContext()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             var exception = new Exception();
 
             using (SynchronizationContextAssert.ExpectSinglePost(postedAction =>
@@ -247,8 +247,8 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_resets_after_overlapping_tasks_fail()
         {
-            var source1 = new TaskCompletionSource<object>();
-            var source2 = new TaskCompletionSource<object>();
+            var source1 = new TaskCompletionSource<object?>();
+            var source2 = new TaskCompletionSource<object?>();
 
             AmbientTasks.Add(source1.Task);
             AmbientTasks.Add(source2.Task);
@@ -266,7 +266,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static async Task WaitAllAsync_should_throw_AggregateException_when_awaited()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source.Task);
 
             var waitAllTask = AmbientTasks.WaitAllAsync();
@@ -282,9 +282,9 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_does_not_return_with_fault_from_added_test_until_last_task_completes()
         {
-            var source1 = new TaskCompletionSource<object>();
-            var source2 = new TaskCompletionSource<object>();
-            var source3 = new TaskCompletionSource<object>();
+            var source1 = new TaskCompletionSource<object?>();
+            var source2 = new TaskCompletionSource<object?>();
+            var source3 = new TaskCompletionSource<object?>();
 
             AmbientTasks.Add(source1.Task);
             AmbientTasks.Add(source2.Task);
@@ -311,8 +311,8 @@ namespace Techsola
         {
             var task1Exceptions = new[] { new Exception("Task 1 exception 1"), new Exception("Task 1 exception 2") };
             var task2Exceptions = new[] { new Exception("Task 2 exception 1"), new Exception("Task 2 exception 2") };
-            var source1 = new TaskCompletionSource<object>();
-            var source2 = new TaskCompletionSource<object>();
+            var source1 = new TaskCompletionSource<object?>();
+            var source2 = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source1.Task);
             AmbientTasks.Add(source2.Task);
 
@@ -334,8 +334,8 @@ namespace Techsola
         {
             var task1Exceptions = new[] { new Exception("Task 1 exception 1"), new Exception("Task 1 exception 2") };
             var task2Exceptions = new[] { new Exception("Task 2 exception 1"), new Exception("Task 2 exception 2") };
-            var source1 = new TaskCompletionSource<object>();
-            var source2 = new TaskCompletionSource<object>();
+            var source1 = new TaskCompletionSource<object?>();
+            var source2 = new TaskCompletionSource<object?>();
             AmbientTasks.Add(source1.Task);
             AmbientTasks.Add(source2.Task);
 
@@ -355,7 +355,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void SynchronizationContext_that_throws_on_post_does_not_prevent_WaitAllAsync_completion()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
 
             using (SynchronizationContextAssert.ExpectSinglePost(postedAction => throw new Exception()))
             {
@@ -388,7 +388,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void BeginContext_handler_receives_exceptions_from_asynchronously_faulted_tasks()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             var exception = new Exception();
             var watcher = new CallbackWatcher();
 
@@ -419,7 +419,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Handled_exceptions_do_not_appear_in_task_returned_from_WaitAllAsync_while_waiting_for_task()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             var exception = new Exception();
 
             AmbientTasks.BeginContext(handler => { });
@@ -555,7 +555,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static async Task BeginContext_handler_flows_into_new_thread()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
             var watcher = new CallbackWatcher();
 
             var thread = new Thread(() =>
@@ -587,7 +587,7 @@ namespace Techsola
             var watcher = new CallbackWatcher();
             AmbientTasks.BeginContext(ex => watcher.OnCallback());
 
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
@@ -632,7 +632,7 @@ namespace Techsola
             using (watcher.ExpectCallback())
                 AmbientTasks.Add(Task.FromException(new Exception()));
 
-            async Task InnerFunction()
+            static async Task InnerFunction()
             {
                 await Task.Yield();
                 AmbientTasks.BeginContext(ex => Assert.Fail());
@@ -672,7 +672,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void SynchronizationContext_that_throws_on_post_adds_exception_to_WaitAllAsync()
         {
-            var source = new TaskCompletionSource<object>();
+            var source = new TaskCompletionSource<object?>();
 
             var postException = new Exception();
             var taskException = new Exception();

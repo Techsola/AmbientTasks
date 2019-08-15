@@ -29,9 +29,9 @@ namespace Techsola
 
         private sealed class MockSynchronizationContext : SynchronizationContext
         {
-            private readonly Action<Action> testPostedAction;
+            private readonly Action<Action>? testPostedAction;
 
-            public MockSynchronizationContext(Action<Action> testPostedAction)
+            public MockSynchronizationContext(Action<Action>? testPostedAction)
             {
                 this.testPostedAction = testPostedAction;
             }
@@ -49,7 +49,7 @@ namespace Techsola
                 if (ReceivedPost) Assert.Fail("Expected no more than one call to SynchronizationContext.Post.");
                 ReceivedPost = true;
 
-                testPostedAction.Invoke(() => d.Invoke(state));
+                testPostedAction!.Invoke(() => d.Invoke(state));
             }
         }
     }

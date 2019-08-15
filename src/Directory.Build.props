@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <Features>strict</Features>
+  </PropertyGroup>
+
+</Project>

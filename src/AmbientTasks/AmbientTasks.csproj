@@ -14,9 +14,6 @@
     <PackageTags>async task void post background ambient scope wait track handle error</PackageTags>
     <Description>Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and async void. Easy to produce and consume, and test-friendly.</Description>
 
-    <LangVersion>preview</LangVersion>
-    <Nullable>enable</Nullable>
-    <Features>strict</Features>
     <WarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</WarningsAsErrors>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\AmbientTasks.snk</AssemblyOriginatorKeyFile>

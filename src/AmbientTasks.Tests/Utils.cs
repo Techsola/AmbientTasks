@@ -5,7 +5,7 @@ namespace Techsola
 {
     internal static class Utils
     {
-        public static IDisposable WithTemporarySynchronizationContext(SynchronizationContext context)
+        public static IDisposable WithTemporarySynchronizationContext(SynchronizationContext? context)
         {
             var originalSynchronizationContext = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(context);

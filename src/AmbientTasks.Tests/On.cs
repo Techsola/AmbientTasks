@@ -9,11 +9,11 @@ namespace Techsola
 
         private sealed class OnDisposeAction : IDisposable
         {
-            private Action action;
+            private Action? action;
 
             public OnDisposeAction(Action action)
             {
-                this.action = action;
+                this.action = action ?? throw new ArgumentNullException(nameof(action));
             }
 
             public void Dispose() => Interlocked.Exchange(ref action, null)?.Invoke();

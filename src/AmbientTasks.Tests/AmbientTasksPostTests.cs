@@ -19,7 +19,7 @@ namespace Techsola
             switch (overload)
             {
                 case PostOverload.Action:
-                    AmbientTasks.Post( action);
+                    AmbientTasks.Post(action);
                     break;
                 case PostOverload.SendOrPostCallback:
                     AmbientTasks.Post(state => ((Action)state).Invoke(), state: action);
@@ -34,7 +34,7 @@ namespace Techsola
             switch (overload)
             {
                 case PostOverload.Action:
-                    AmbientTasksPost(overload, null);
+                    AmbientTasks.Post(null);
                     break;
                 case PostOverload.SendOrPostCallback:
                     AmbientTasks.Post(null, state: null);
@@ -50,12 +50,12 @@ namespace Techsola
             {
                 case PostOverload.Action:
                     Should.Throw<ArgumentNullException>(
-                            () => AmbientTasks.Post(synchronizationContext: null, () => { }))
+                            () => AmbientTasks.Post(synchronizationContext: null!, () => { }))
                         .ParamName.ShouldBe("synchronizationContext");
                     break;
                 case PostOverload.SendOrPostCallback:
                     Should.Throw<ArgumentNullException>(
-                            () => AmbientTasks.Post(synchronizationContext: null, state => { }, state: null))
+                            () => AmbientTasks.Post(synchronizationContext: null!, state => { }, state: null))
                         .ParamName.ShouldBe("synchronizationContext");
                     break;
             }
@@ -248,7 +248,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_waits_for_SynchronizationContext_Post_to_invoke_delegate_before_completing([Values] PostOverload overload)
         {
-            var postedAction = (Action)null;
+            var postedAction = (Action?)null;
 
             using (SynchronizationContextAssert.ExpectSinglePost(p => postedAction = p))
             {
@@ -258,7 +258,8 @@ namespace Techsola
             var waitAllTask = AmbientTasks.WaitAllAsync();
             waitAllTask.IsCompleted.ShouldBeFalse();
 
-            postedAction.Invoke();
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
 
             waitAllTask.Status.ShouldBe(TaskStatus.RanToCompletion);
             AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
@@ -268,8 +269,8 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void WaitAllAsync_does_not_complete_until_async_task_added_by_user_delegate_completes([Values] PostOverload overload)
         {
-            var source = new TaskCompletionSource<object>();
-            var postedAction = (Action)null;
+            var source = new TaskCompletionSource<object?>();
+            var postedAction = (Action?)null;
 
             using (SynchronizationContextAssert.ExpectSinglePost(p => postedAction = p))
             {
@@ -282,7 +283,8 @@ namespace Techsola
             var waitAllTask = AmbientTasks.WaitAllAsync();
             waitAllTask.IsCompleted.ShouldBeFalse();
 
-            postedAction.Invoke();
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
 
             waitAllTask.IsCompleted.ShouldBeFalse();
 
@@ -295,7 +297,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Delegate_is_abandoned_if_SynchronizationContext_post_throws_before_invoking_delegate([Values] PostOverload overload)
         {
-            var postedAction = (Action)null;
+            var postedAction = (Action?)null;
 
             using (SynchronizationContextAssert.ExpectSinglePost(p =>
             {
@@ -308,7 +310,8 @@ namespace Techsola
 
             AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
 
-            postedAction.Invoke();
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
 
             AmbientTasks.WaitAllAsync().Status.ShouldBe(TaskStatus.RanToCompletion);
         }
@@ -317,7 +320,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Subsequent_invocations_by_SynchronizationContext_are_ignored_when_successful([Values] PostOverload overload)
         {
-            var postedAction = (Action)null;
+            var postedAction = (Action?)null;
             var callCount = 0;
 
             using (SynchronizationContextAssert.ExpectSinglePost(p =>
@@ -329,7 +332,8 @@ namespace Techsola
             }
 
             callCount.ShouldBe(0);
-            postedAction.Invoke();
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
             callCount.ShouldBe(1);
 
             postedAction.Invoke();
@@ -341,7 +345,7 @@ namespace Techsola
         [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
         public static void Subsequent_invocations_by_SynchronizationContext_are_ignored_when_user_code_throws([Values] PostOverload overload)
         {
-            var postedAction = (Action)null;
+            var postedAction = (Action?)null;
             var callCount = 0;
 
             using (SynchronizationContextAssert.ExpectSinglePost(p =>
@@ -360,7 +364,8 @@ namespace Techsola
             Should.Throw<Exception>(postedAction);
             callCount.ShouldBe(1);
 
-            postedAction.Invoke();
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
 
             callCount.ShouldBe(1);
         }
