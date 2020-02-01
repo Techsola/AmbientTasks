@@ -25,6 +25,10 @@ namespace Techsola
 
         public static void Post(System.Threading.SynchronizationContext synchronizationContext, [System.Runtime.CompilerServices.Nullable(2)] System.Action postCallbackAction);
 
+        public static void Post([System.Runtime.CompilerServices.Nullable(new byte[] { 2, 1 })] System.Func<System.Threading.Tasks.Task> postCallbackAsyncAction);
+
+        public static void Post(System.Threading.SynchronizationContext synchronizationContext, [System.Runtime.CompilerServices.Nullable(new byte[] { 2, 1 })] System.Func<System.Threading.Tasks.Task> postCallbackAsyncAction);
+
         public static System.Threading.Tasks.Task WaitAllAsync();
     }
 }

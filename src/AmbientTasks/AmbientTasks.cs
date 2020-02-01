@@ -319,5 +319,85 @@ namespace Techsola
                 closure.Context.EndTask();
             }
         }
+
+        /// <summary>
+        /// <para>
+        /// Executes the specified delegate on the current <see cref="SynchronizationContext"/> while tracking so that
+        /// any exception is handled and so that <see cref="WaitAllAsync"/> waits for completion of the returned task.
+        /// </para>
+        /// <para>
+        /// A default <see cref="SynchronizationContext"/> is installed if the current one is <see langword="null"/>.
+        /// </para>
+        /// <para>
+        /// If an exception handler has been registered (see <see cref="BeginContext"/>), any exception will be caught
+        /// and routed to the handler instead of <see cref="WaitAllAsync"/>. If no handler has been registered, the
+        /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
+        /// </para>
+        /// </summary>
+        public static void Post(Func<Task>? postCallbackAsyncAction)
+        {
+            // Install a default synchronization context if one does not exist
+            Post(AsyncOperationManager.SynchronizationContext, postCallbackAsyncAction);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Executes the specified delegate on the current <see cref="SynchronizationContext"/> while tracking so that
+        /// any exception is handled and so that <see cref="WaitAllAsync"/> waits for completion of the returned task.
+        /// </para>
+        /// <para>
+        /// <see cref="ArgumentNullException"/> is thrown if <paramref name="synchronizationContext"/> is <see
+        /// langword="null"/>.
+        /// </para>
+        /// <para>
+        /// If an exception handler has been registered (see <see cref="BeginContext"/>), any exception will be caught
+        /// and routed to the handler instead of <see cref="WaitAllAsync"/>. If no handler has been registered, the
+        /// exception will not be caught even though it will be recorded and thrown by <see cref="WaitAllAsync"/>.
+        /// </para>
+        /// </summary>
+        public static void Post(SynchronizationContext synchronizationContext, Func<Task>? postCallbackAsyncAction)
+        {
+            if (synchronizationContext is null)
+                throw new ArgumentNullException(nameof(synchronizationContext));
+
+            if (postCallbackAsyncAction is null) return;
+
+            var context = CurrentContext;
+            context.StartTask();
+
+            var closure = new PostClosure<Func<Task>>(context, postCallbackAsyncAction);
+
+            var postReturned = false;
+            try
+            {
+                synchronizationContext.Post(OnPostAsyncAction, closure);
+                postReturned = true;
+            }
+            finally
+            {
+                if (!postReturned && closure.TryClaimInvocation())
+                {
+                    context.EndTask();
+                }
+            }
+        }
+
+        private static void OnPostAsyncAction(object? state)
+        {
+            var closure = (PostClosure<Func<Task>>)state!;
+            if (!closure.TryClaimInvocation()) return;
+
+            try
+            {
+                Add(closure.State.Invoke());
+            }
+            catch (Exception ex) when (closure.Context.RecordAndTrySuppress(new[] { ex }))
+            {
+            }
+            finally
+            {
+                closure.Context.EndTask();
+            }
+        }
     }
 }

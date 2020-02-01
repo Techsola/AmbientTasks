@@ -11,7 +11,8 @@ namespace Techsola
         public enum PostOverload
         {
             Action,
-            SendOrPostCallback
+            SendOrPostCallback,
+            AsyncAction
         }
 
         private static void AmbientTasksPost(PostOverload overload, Action action)
@@ -24,6 +25,15 @@ namespace Techsola
                 case PostOverload.SendOrPostCallback:
                     AmbientTasks.Post(state => ((Action)state!).Invoke(), state: action);
                     break;
+                case PostOverload.AsyncAction:
+                    AmbientTasks.Post(() =>
+                    {
+                        action.Invoke();
+                        return Task.CompletedTask;
+                    });
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -34,11 +44,16 @@ namespace Techsola
             switch (overload)
             {
                 case PostOverload.Action:
-                    AmbientTasks.Post(null);
+                    AmbientTasks.Post((Action?)null);
                     break;
                 case PostOverload.SendOrPostCallback:
                     AmbientTasks.Post(null, state: null);
                     break;
+                case PostOverload.AsyncAction:
+                    AmbientTasks.Post((Func<Task>?)null);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -50,14 +65,21 @@ namespace Techsola
             {
                 case PostOverload.Action:
                     Should.Throw<ArgumentNullException>(
-                            () => AmbientTasks.Post(synchronizationContext: null!, () => { }))
+                            () => AmbientTasks.Post(synchronizationContext: null!, (Action?)null))
                         .ParamName.ShouldBe("synchronizationContext");
                     break;
                 case PostOverload.SendOrPostCallback:
                     Should.Throw<ArgumentNullException>(
-                            () => AmbientTasks.Post(synchronizationContext: null!, state => { }, state: null))
+                            () => AmbientTasks.Post(synchronizationContext: null!, null, state: null))
                         .ParamName.ShouldBe("synchronizationContext");
                     break;
+                case PostOverload.AsyncAction:
+                    Should.Throw<ArgumentNullException>(
+                            () => AmbientTasks.Post(synchronizationContext: null!, (Func<Task>?)null))
+                        .ParamName.ShouldBe("synchronizationContext");
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -79,6 +101,11 @@ namespace Techsola
                         case PostOverload.SendOrPostCallback:
                             AmbientTasks.Post(contextToUse, state => { }, state: null);
                             break;
+                        case PostOverload.AsyncAction:
+                            AmbientTasks.Post(contextToUse, () => Task.CompletedTask);
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
             }
@@ -278,6 +305,31 @@ namespace Techsola
                 {
                     AmbientTasks.Add(source.Task);
                 });
+            }
+
+            var waitAllTask = AmbientTasks.WaitAllAsync();
+            waitAllTask.IsCompleted.ShouldBeFalse();
+
+            postedAction.ShouldNotBeNull();
+            postedAction!.Invoke();
+
+            waitAllTask.IsCompleted.ShouldBeFalse();
+
+            source.SetResult(null);
+
+            waitAllTask.Status.ShouldBe(TaskStatus.RanToCompletion);
+        }
+
+        [Test]
+        [PreventExecutionContextLeaks] // Workaround for https://github.com/nunit/nunit/issues/3283
+        public static void WaitAllAsync_does_not_complete_until_async_task_returned_by_user_delegate_completes()
+        {
+            var source = new TaskCompletionSource<object?>();
+            var postedAction = (Action?)null;
+
+            using (SynchronizationContextAssert.ExpectSinglePost(p => postedAction = p))
+            {
+                AmbientTasks.Post(() => source.Task);
             }
 
             var waitAllTask = AmbientTasks.WaitAllAsync();
