@@ -29,6 +29,20 @@ steps:
     testResultsFormat: VSTest
     testResultsFiles: artifacts\Test results\netcoreapp2.1.trx
 
+- task: PublishTestResults@2
+  displayName: Publish test results (netcoreapp3.0)
+  inputs:
+    testRunTitle: netcoreapp3.0
+    testResultsFormat: VSTest
+    testResultsFiles: artifacts\Test results\netcoreapp3.0.trx
+
+- task: PublishTestResults@2
+  displayName: Publish test results (netcoreapp3.1)
+  inputs:
+    testRunTitle: netcoreapp3.1
+    testResultsFormat: VSTest
+    testResultsFiles: artifacts\Test results\netcoreapp3.1.trx
+
 - task: PublishBuildArtifacts@1
   displayName: Publish test results artifact
   inputs:
