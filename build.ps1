@@ -14,7 +14,7 @@ $testResultsDir = Join-Path $artifactsDir 'Test results'
 
 # Detection
 . $PSScriptRoot\build\Get-DetectedCiVersion.ps1
-$versionInfo = Get-DetectedCiVersion $Release
+$versionInfo = Get-DetectedCiVersion -Release:$Release
 Update-CiServerBuildName $versionInfo.ProductVersion
 Write-Host "Building using version $($versionInfo.ProductVersion)"
 
