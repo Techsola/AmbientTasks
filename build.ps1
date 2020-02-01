@@ -29,7 +29,7 @@ $msbuildArgs = @(
     '/p:RepositoryCommit=' + $versionInfo.CommitHash
     '/p:Version=' + $versionInfo.ProductVersion
     '/p:PackageVersion=' + $versionInfo.PackageVersion
-    '/p:AssemblyVersion=' + $versionInfo.FileVersion
+    '/p:FileVersion=' + $versionInfo.FileVersion
     '/p:Configuration=' + $configuration
     '/v:minimal'
 )
