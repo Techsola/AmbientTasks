@@ -323,7 +323,7 @@ namespace Techsola
 
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
 
-            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+            var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
 
             aggregateException.InnerExceptions.ShouldBe(task1Exceptions.Concat(task2Exceptions));
         }
@@ -346,7 +346,7 @@ namespace Techsola
 
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
 
-            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+            var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
 
             aggregateException.InnerExceptions.ShouldBe(task1Exceptions.Concat(task2Exceptions));
         }
@@ -458,7 +458,7 @@ namespace Techsola
 
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
 
-            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+            var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
 
             aggregateException.InnerExceptions.ShouldHaveSingleItem().ShouldBeSameAs(taskException);
         }
@@ -485,7 +485,7 @@ namespace Techsola
             var waitAllTask = AmbientTasks.WaitAllAsync();
 
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
-            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+            var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
 
             aggregateException.InnerExceptions.ShouldBe(new[] { taskException, handlerException1, handlerException2 });
         }
@@ -685,7 +685,7 @@ namespace Techsola
                 source.SetException(taskException);
                 waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
 
-                var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+                var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
                 aggregateException.InnerExceptions.ShouldBe(new[] { taskException, postException });
             }
         }

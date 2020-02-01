@@ -1,9 +1,14 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Features>strict</Features>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.154" PrivateAssets="all" />
+    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[3.1.0]" />
+  </ItemGroup>
 
 </Project>

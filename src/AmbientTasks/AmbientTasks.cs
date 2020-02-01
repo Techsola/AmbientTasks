@@ -81,14 +81,14 @@ namespace Techsola
         }
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught and passed to the appropriate handler by design.")]
-        private static void OnTaskCompleted(Task completedTask, object state)
+        private static void OnTaskCompleted(Task completedTask, object? state)
         {
-            var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state;
+            var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state!;
             try
             {
                 if (completedTask.IsFaulted)
                 {
-                    if (!context.RecordAndTrySuppress(completedTask.Exception.InnerExceptions))
+                    if (!context.RecordAndTrySuppress(completedTask.Exception!.InnerExceptions))
                     {
                         var exceptionInfo = ExceptionDispatchInfo.Capture(completedTask.Exception);
 
@@ -115,9 +115,9 @@ namespace Techsola
             }
         }
 
-        private static void OnTaskFaultWithoutHandler(object state)
+        private static void OnTaskFaultWithoutHandler(object? state)
         {
-            ((ExceptionDispatchInfo)state).Throw();
+            ((ExceptionDispatchInfo)state!).Throw();
         }
 
         /// <summary>
@@ -182,9 +182,9 @@ namespace Techsola
             }
         }
 
-        private static void OnPost(object state)
+        private static void OnPost(object? state)
         {
-            var closure = (PostClosure<(SendOrPostCallback d, object? state)>)state;
+            var closure = (PostClosure<(SendOrPostCallback d, object? state)>)state!;
             if (!closure.TryClaimInvocation()) return;
             try
             {
@@ -261,9 +261,9 @@ namespace Techsola
             }
         }
 
-        private static void OnPostAction(object state)
+        private static void OnPostAction(object? state)
         {
-            var closure = (PostClosure<Action>)state;
+            var closure = (PostClosure<Action>)state!;
             if (!closure.TryClaimInvocation()) return;
             try
             {

@@ -38,12 +38,12 @@ namespace Techsola
 
             public bool ReceivedPost { get; private set; }
 
-            public override void Send(SendOrPostCallback d, object state)
+            public override void Send(SendOrPostCallback d, object? state)
             {
                 Assert.Fail("Expected no call to SynchronizationContext.Send.");
             }
 
-            public override void Post(SendOrPostCallback d, object state)
+            public override void Post(SendOrPostCallback d, object? state)
             {
                 if (testPostedAction is null) Assert.Fail("Expected no calls to SynchronizationContext.Post.");
                 if (ReceivedPost) Assert.Fail("Expected no more than one call to SynchronizationContext.Post.");

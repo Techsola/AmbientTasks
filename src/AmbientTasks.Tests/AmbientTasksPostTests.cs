@@ -22,7 +22,7 @@ namespace Techsola
                     AmbientTasks.Post(action);
                     break;
                 case PostOverload.SendOrPostCallback:
-                    AmbientTasks.Post(state => ((Action)state).Invoke(), state: action);
+                    AmbientTasks.Post(state => ((Action)state!).Invoke(), state: action);
                     break;
             }
         }
@@ -67,7 +67,7 @@ namespace Techsola
         {
             using (SynchronizationContextAssert.ExpectSinglePost(postedAction => { }))
             {
-                var contextToUse = SynchronizationContext.Current;
+                var contextToUse = SynchronizationContext.Current!;
 
                 using (SynchronizationContextAssert.ExpectNoPost())
                 {
@@ -225,7 +225,7 @@ namespace Techsola
             var waitAllTask = AmbientTasks.WaitAllAsync();
             waitAllTask.Status.ShouldBe(TaskStatus.Faulted);
 
-            var aggregateException = waitAllTask.Exception.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
+            var aggregateException = waitAllTask.Exception!.InnerExceptions.ShouldHaveSingleItem().ShouldBeOfType<AggregateException>();
 
             aggregateException.InnerExceptions.ShouldHaveSingleItem().ShouldBeSameAs(exception);
         }

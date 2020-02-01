@@ -28,17 +28,18 @@ namespace Techsola
             [DebuggerNonUserCode]
             public override TestResult Execute(TestExecutionContext context)
             {
-                using var copy = ExecutionContext.Capture().CreateCopy();
+                using var copy = ExecutionContext.Capture()?.CreateCopy()
+                    ?? throw new NotImplementedException();
 
                 var returnValue = new StrongBox<TestResult>();
                 ExecutionContext.Run(copy, Execute, state: (context, returnValue));
-                return returnValue.Value;
+                return returnValue.Value!;
             }
 
             [DebuggerNonUserCode]
-            private void Execute(object state)
+            private void Execute(object? state)
             {
-                var (context, returnValue) = ((TestExecutionContext, StrongBox<TestResult>))state;
+                var (context, returnValue) = ((TestExecutionContext, StrongBox<TestResult>))state!;
 
                 returnValue.Value = innerCommand.Execute(context);
             }
