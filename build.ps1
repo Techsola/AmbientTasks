@@ -51,15 +51,16 @@ Remove-Item -Recurse -Force $packagesDir -ErrorAction Ignore
 if ($LastExitCode) { exit 1 }
 
 if ($SigningCertThumbprint) {
-    # Hoping to use dotnet tool instead of this (https://github.com/NuGet/Home/issues/8263)
+    # Waiting for 'dotnet sign' to become available (https://github.com/NuGet/Home/issues/7939)
     $nuget = 'tools\nuget.exe'
     if (-not (Test-Path $nuget)) {
         New-Item -ItemType Directory -Force -Path tools
         Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nuget
     }
 
-    foreach ($package in Get-ChildItem -Recurse $packagesDir -Include *.nupkg) {
-        & $nuget sign $package -CertificateFingerprint $SigningCertThumbprint -Timestamper $TimestampServer
+    # Workaround for https://github.com/NuGet/Home/issues/10446
+    foreach ($extension in 'nupkg', 'snupkg') {
+        & $nuget sign $packagesDir\*.$extension -CertificateFingerprint $SigningCertThumbprint -Timestamper $TimestampServer
     }
 }
 
