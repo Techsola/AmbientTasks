@@ -80,7 +80,6 @@ namespace Techsola
             }
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exceptions are caught and passed to the appropriate handler by design.")]
         private static void OnTaskCompleted(Task completedTask, object? state)
         {
             var (context, addSynchronizationContext, taskWasStarted) = ((AmbientTaskContext, SynchronizationContext, bool))state!;
