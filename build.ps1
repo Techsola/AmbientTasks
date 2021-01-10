@@ -19,23 +19,16 @@ $versionInfo = Get-DetectedCiVersion -Release:$Release
 Update-CiServerBuildName $versionInfo.ProductVersion
 Write-Host "Building using version $($versionInfo.ProductVersion)"
 
-$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-$visualStudioInstallation = & $vswhere -latest -version [16,] -requires Microsoft.Component.MSBuild -products * -property installationPath
-if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Studio 2019 or newer.' }
-$msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
-
-$msbuildArgs = @(
-    '/p:PackageOutputPath=' + $packagesDir
+$dotnetArgs = @(
+    '--configuration', $configuration
     '/p:RepositoryCommit=' + $versionInfo.CommitHash
     '/p:Version=' + $versionInfo.ProductVersion
     '/p:PackageVersion=' + $versionInfo.PackageVersion
     '/p:FileVersion=' + $versionInfo.FileVersion
-    '/p:Configuration=' + $configuration
-    '/v:minimal'
 )
 
 # Build
-& $msbuild /t:build /restore /bl:"$logsDir\build.binlog" @msbuildArgs
+dotnet build /bl:"$logsDir\build.binlog" @dotnetArgs
 if ($LastExitCode) { exit 1 }
 
 if ($SigningCertThumbprint) {
@@ -47,7 +40,7 @@ if ($SigningCertThumbprint) {
 # Pack
 Remove-Item -Recurse -Force $packagesDir -ErrorAction Ignore
 
-& $msbuild /t:pack /p:NoBuild=true /bl:"$logsDir\pack.binlog" @msbuildArgs
+dotnet pack --no-build --output $packagesDir /bl:"$logsDir\pack.binlog" @dotnetArgs
 if ($LastExitCode) { exit 1 }
 
 if ($SigningCertThumbprint) {
@@ -58,7 +51,7 @@ if ($SigningCertThumbprint) {
         Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nuget
     }
 
-    # Workaround for https://github.com/NuGet/Home/issues/10446
+     # Workaround for https://github.com/NuGet/Home/issues/10446
     foreach ($extension in 'nupkg', 'snupkg') {
         & $nuget sign $packagesDir\*.$extension -CertificateFingerprint $SigningCertThumbprint -Timestamper $TimestampServer
     }
