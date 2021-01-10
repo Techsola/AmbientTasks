@@ -37,3 +37,10 @@ jobs:
       with:
         name: Test results
         path: artifacts/Test results
+
+    - name: Upload logs artifact
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: Logs
+        path: artifacts/Logs

@@ -11,6 +11,7 @@ $configuration = 'Release'
 $artifactsDir = Join-Path (Resolve-Path .) 'artifacts'
 $packagesDir = Join-Path $artifactsDir 'Packages'
 $testResultsDir = Join-Path $artifactsDir 'Test results'
+$logsDir = Join-Path $artifactsDir 'Logs'
 
 # Detection
 . $PSScriptRoot\build\Get-DetectedCiVersion.ps1
@@ -34,7 +35,7 @@ $msbuildArgs = @(
 )
 
 # Build
-& $msbuild /t:build /restore @msbuildArgs
+& $msbuild /t:build /restore /bl:"$logsDir\build.binlog" @msbuildArgs
 if ($LastExitCode) { exit 1 }
 
 if ($SigningCertThumbprint) {
@@ -46,7 +47,7 @@ if ($SigningCertThumbprint) {
 # Pack
 Remove-Item -Recurse -Force $packagesDir -ErrorAction Ignore
 
-& $msbuild /t:pack /p:NoBuild=true @msbuildArgs
+& $msbuild /t:pack /p:NoBuild=true /bl:"$logsDir\pack.binlog" @msbuildArgs
 if ($LastExitCode) { exit 1 }
 
 if ($SigningCertThumbprint) {
@@ -70,7 +71,7 @@ if ($env:CODECOV_TOKEN) {
 
 Remove-Item -Recurse -Force $testResultsDir -ErrorAction Ignore
 
-dotnet test --no-build --configuration $configuration --logger trx --results-directory $testResultsDir /p:AltCover=true /p:AltCoverXmlReport="$testResultsDir\coverage.xml" /p:AltCoverAssemblyExcludeFilter=AmbientTasks.Tests /p:AltCoverVerbosity=Warning
+dotnet test --no-build --configuration $configuration --logger trx --results-directory $testResultsDir /p:AltCover=true /p:AltCoverXmlReport="$testResultsDir\coverage.xml" /p:AltCoverAssemblyExcludeFilter=AmbientTasks.Tests /p:AltCoverVerbosity=Warning /bl:"$logsDir\test.binlog"
 if ($LastExitCode) { $testsFailed = true }
 
 if ($env:CODECOV_TOKEN) {
