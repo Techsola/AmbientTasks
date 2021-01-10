@@ -22,7 +22,6 @@ $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.e
 $visualStudioInstallation = & $vswhere -latest -version [16,] -requires Microsoft.Component.MSBuild -products * -property installationPath
 if (!$visualStudioInstallation) { throw 'Cannot find installation of Visual Studio 2019 or newer.' }
 $msbuild = Join-Path $visualStudioInstallation 'MSBuild\Current\Bin\MSBuild.exe'
-$vstest = Join-Path $visualStudioInstallation 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\VSTest.Console.exe'
 
 $msbuildArgs = @(
     '/p:PackageOutputPath=' + $packagesDir
@@ -64,9 +63,6 @@ if ($SigningCertThumbprint) {
 }
 
 # Test
-dotnet tool install altcover.global --tool-path tools
-$altcover = 'tools\altcover'
-
 if ($env:CODECOV_TOKEN) {
     dotnet tool install Codecov.Tool --tool-path tools
     $codecov = 'tools\codecov'
@@ -74,33 +70,25 @@ if ($env:CODECOV_TOKEN) {
 
 Remove-Item -Recurse -Force $testResultsDir -ErrorAction Ignore
 
-foreach ($testAssembly in Get-ChildItem -Recurse -Path src\*.Tests\bin\$configuration -Include *.Tests.dll) {
-    $directory = Split-Path $testAssembly
-    $tfm = (Split-Path -Leaf $directory)
+dotnet test --no-build --configuration $configuration --logger trx --results-directory $testResultsDir /p:AltCover=true /p:AltCoverXmlReport="$testResultsDir\coverage.xml"
+if ($LastExitCode) { $testsFailed = true }
 
-    $savedDirectory = '__Saved'
-    Remove-Item -Recurse -Force $savedDirectory -ErrorAction Ignore
-    & $altcover --inputDirectory=$directory --inplace --outputDirectory=$savedDirectory --xmlReport=$testResultsDir\coverage.$tfm.xml --assemblyExcludeFilter='AmbientTasks.Tests|NUnit3.TestAdapter'
-    if ($LastExitCode) { exit 1 }
-    Remove-Item -Recurse -Force $savedDirectory -ErrorAction Ignore
+if ($env:CODECOV_TOKEN) {
+    # Workaround for https://github.com/codecov/codecov-exe/issues/71
+    $codecovFullPath = Join-Path (Get-Location) $codecov
+    Push-Location $testResultsDir
 
-    & $vstest $testAssembly /Logger:'console;verbosity=minimal' /Logger:"trx;LogFileName=$tfm.trx" /ResultsDirectory:$testResultsDir
-    if ($LastExitCode) { $testsFailed = true }
+    foreach ($coverageFile in Get-ChildItem "$testResultsDir\coverage.*.xml") {
+        $tfm = $coverageFile.Name.Substring(
+            'coverage.'.Length,
+            $coverageFile.Name.Length - 'coverage.'.Length - '.xml'.Length)
 
-    & $altcover runner --collect --recorderDirectory=$directory
-    if ($LastExitCode) { exit 1 }
-
-    if ($env:CODECOV_TOKEN) {
-        # Workaround for https://github.com/codecov/codecov-exe/issues/71
-        $codecovFullPath = Join-Path (Get-Location) $codecov
-        Push-Location $testResultsDir
-
-        & $codecovFullPath --name $tfm --file coverage.$tfm.xml --token $env:CODECOV_TOKEN
+        & $codecovFullPath --name $tfm --file $coverageFile.Name --token $env:CODECOV_TOKEN
         if ($LastExitCode) { exit 1 }
-
-        # Workaround for https://github.com/codecov/codecov-exe/issues/71
-        Pop-Location
     }
+
+    # Workaround for https://github.com/codecov/codecov-exe/issues/71
+    Pop-Location
 }
 
 if ($testsFailed) { exit 1 }
