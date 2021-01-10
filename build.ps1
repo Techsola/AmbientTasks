@@ -25,6 +25,7 @@ $dotnetArgs = @(
     '/p:Version=' + $versionInfo.ProductVersion
     '/p:PackageVersion=' + $versionInfo.PackageVersion
     '/p:FileVersion=' + $versionInfo.FileVersion
+    '/p:ContinuousIntegrationBuild=' + ($env:CI -or $env:TF_BUILD)
 )
 
 # Build
