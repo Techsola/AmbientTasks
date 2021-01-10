@@ -74,21 +74,14 @@ dotnet test --no-build --configuration $configuration --logger trx --results-dir
 if ($LastExitCode) { $testsFailed = true }
 
 if ($env:CODECOV_TOKEN) {
-    # Workaround for https://github.com/codecov/codecov-exe/issues/71
-    $codecovFullPath = Join-Path (Get-Location) $codecov
-    Push-Location $testResultsDir
-
     foreach ($coverageFile in Get-ChildItem "$testResultsDir\coverage.*.xml") {
         $tfm = $coverageFile.Name.Substring(
             'coverage.'.Length,
             $coverageFile.Name.Length - 'coverage.'.Length - '.xml'.Length)
 
-        & $codecovFullPath --name $tfm --file $coverageFile.Name --token $env:CODECOV_TOKEN
+        & $codecov --name $tfm --file $coverageFile --token $env:CODECOV_TOKEN
         if ($LastExitCode) { exit 1 }
     }
-
-    # Workaround for https://github.com/codecov/codecov-exe/issues/71
-    Pop-Location
 }
 
 if ($testsFailed) { exit 1 }
