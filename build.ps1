@@ -80,7 +80,7 @@ foreach ($testAssembly in Get-ChildItem -Recurse -Path src\*.Tests\bin\$configur
 
     $savedDirectory = '__Saved'
     Remove-Item -Recurse -Force $savedDirectory -ErrorAction Ignore
-    & $altcover --inputDirectory=$directory --inplace --outputDirectory=$savedDirectory --opencover --xmlReport=$testResultsDir\coverage.$tfm.xml --assemblyExcludeFilter='AmbientTasks.Tests|NUnit3.TestAdapter'
+    & $altcover --inputDirectory=$directory --inplace --outputDirectory=$savedDirectory --xmlReport=$testResultsDir\coverage.$tfm.xml --assemblyExcludeFilter='AmbientTasks.Tests|NUnit3.TestAdapter'
     if ($LastExitCode) { exit 1 }
     Remove-Item -Recurse -Force $savedDirectory -ErrorAction Ignore
 
