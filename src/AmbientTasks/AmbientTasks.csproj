@@ -14,7 +14,7 @@
     <Description>Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and async void. Easy to produce and consume, and test-friendly.</Description>
 
     <RootNamespace>Techsola</RootNamespace>
-    <WarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</WarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\AmbientTasks.snk</AssemblyOriginatorKeyFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
