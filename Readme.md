@@ -1,4 +1,6 @@
-# AmbientTasks [![NuGet badge](https://img.shields.io/nuget/v/AmbientTasks)](https://www.nuget.org/packages/AmbientTasks/ "NuGet (releases)") [![MyGet badge](https://img.shields.io/myget/ambienttasks/vpre/AmbientTasks.svg?label=myget)](https://www.myget.org/feed/ambienttasks/package/nuget/AmbientTasks "MyGet (prereleases)") [![Gitter badge](https://img.shields.io/gitter/room/Techsola/AmbientTasks)](https://gitter.im/Techsola/AmbientTasks "Chat on Gitter") [![Build status badge](https://github.com/Techsola/AmbientTasks/workflows/CI/badge.svg)](https://github.com/Techsola/AmbientTasks/actions?query=workflow%3ACI "Build status") [![codecov badge](https://codecov.io/gh/Techsola/AmbientTasks/branch/master/graph/badge.svg)](https://codecov.io/gh/Techsola/AmbientTasks "Test coverage")
+# AmbientTasks [![NuGet badge](https://img.shields.io/nuget/v/AmbientTasks)](https://www.nuget.org/packages/AmbientTasks/ "NuGet (releases)") [![MyGet badge](https://img.shields.io/myget/ambienttasks/vpre/AmbientTasks.svg?label=myget)](https://www.myget.org/feed/ambienttasks/package/nuget/AmbientTasks "MyGet (prereleases)") [![Gitter badge](https://img.shields.io/gitter/room/Techsola/AmbientTasks)](https://gitter.im/Techsola/AmbientTasks "Chat on Gitter") [![Build status badge](https://dev.azure.com/Techsola/AmbientTasks/_apis/build/status/AmbientTasks%20CI?branchName=master)](https://dev.azure.com/Techsola/AmbientTasks/_build/latest?definitionId=1&branchName=master "Build status") [![codecov badge](https://codecov.io/gh/Techsola/AmbientTasks/branch/master/graph/badge.svg)](https://codecov.io/gh/Techsola/AmbientTasks "Test coverage")
+
+All notable changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 Enables scoped completion tracking and error handling of tasks as an alternative to fire-and-forget and `async void`. Easy to produce and consume, and test-friendly.
 
@@ -156,3 +158,15 @@ private void SomeEventHandler(object sender, EventArgs e)
 Finally, await `AmbientTasks.WaitAllAsync()` in your test code whenever `AmbientTasks.Add` is used. This gets the timing right and routes any background exceptions to the responsible test.
 
 It could potentially make sense to delay the application exit until `AmbientTasks.WaitAllAsync()` completes, too, depending on your needs.
+
+## Debugging into AmbientTasks source
+
+Stepping into AmbientTasks source code, pausing the debugger while execution is inside AmbientTasks code and seeing the source, and setting breakpoints in AmbientTasks all require loading symbols for AmbientTasks. To do this in Visual Studio:
+
+1. Go to Debug > Options, and uncheck ‘Enable Just My Code.’ (It’s a good idea to reenable this as soon as you’re finished with the task that requires debugging into a specific external library.)  
+   ℹ *Before* doing this, because Visual Studio can become unresponsive when attempting to load symbols for absolutely everything, I recommend going to Debugging > Symbols within the Options window and selecting ‘Load only specified modules.’
+
+2. If you are using a version that was released to nuget.org, enable the built-in ‘NuGet.org Symbol Server’ symbol location.  
+   If you are using a prerelease version of AmbientTasks package, go to Debugging > Symbols within the Options window and add this as a new symbol location: `https://www.myget.org/F/ambienttasks/api/v2/symbolpackage/`
+
+3. If ‘Load only specified modules’ is selected in Options > Debugging > Symbols, you will have to explicitly tell Visual Studio to load symbols for AmbientTasks. One way to do this while debugging is to go to Debug > Windows > Modules and right-click on AmbientTasks. Select ‘Load Symbols’ if you only want to do it for the current debugging session. Select ‘Always Load Automatically’ if you want to load symbols now and also add the file name to a list so that Visual Studio loads AmbientTasks symbols in all future debug sessions when Just My Code is disabled.

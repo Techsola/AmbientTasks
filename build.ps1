@@ -41,6 +41,9 @@ if ($SigningCertThumbprint) {
 # Pack
 Remove-Item -Recurse -Force $packagesDir -ErrorAction Ignore
 
+. build\ValidateMetadata.ps1
+ValidateMetadata $versionInfo.ProductVersion -Release:$Release
+
 dotnet pack --no-build --output $packagesDir /bl:"$logsDir\pack.binlog" @dotnetArgs
 if ($LastExitCode) { exit 1 }
 

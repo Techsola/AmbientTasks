@@ -1,6 +1,6 @@
 MIT License
 
-Copyright © 2019–2020 Technology Solutions Associates, LLC
+Copyright © 2019–2021 Technology Solutions Associates, LLC
 
 All rights reserved.
 
