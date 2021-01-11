@@ -59,17 +59,15 @@ if ($SigningCertThumbprint) {
 }
 
 # Test
-if ($env:CODECOV_TOKEN) {
-    dotnet tool install Codecov.Tool --tool-path tools
-    $codecov = 'tools\codecov'
-}
-
 Remove-Item -Recurse -Force $testResultsDir -ErrorAction Ignore
 
 dotnet test --no-build --configuration $configuration --logger trx --results-directory $testResultsDir /p:AltCover=true /p:AltCoverXmlReport="$testResultsDir\coverage.xml" /p:AltCoverAssemblyExcludeFilter=AmbientTasks.Tests /p:AltCoverVerbosity=Warning /bl:"$logsDir\test.binlog"
 if ($LastExitCode) { $testsFailed = true }
 
 if ($env:CODECOV_TOKEN) {
+    dotnet tool install Codecov.Tool --tool-path tools
+    $codecov = 'tools\codecov'
+
     foreach ($coverageFile in Get-ChildItem "$testResultsDir\coverage.*.xml") {
         $tfm = $coverageFile.Name.Substring(
             'coverage.'.Length,
