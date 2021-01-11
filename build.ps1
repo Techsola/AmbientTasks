@@ -52,6 +52,8 @@ if ($SigningCertThumbprint) {
     $nuget = 'tools\nuget.exe'
     if (-not (Test-Path $nuget)) {
         New-Item -ItemType Directory -Force -Path tools
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nuget
     }
 
