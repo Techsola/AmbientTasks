@@ -21,7 +21,7 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Publish to MyGet
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       run: dotnet nuget push artifacts\Packages\AmbientTasks.*.nupkg --source https://www.myget.org/F/ambienttasks/api/v3/index.json --api-key ${{ secrets.MYGET_API_KEY }}
 
     - name: Upload packages artifact

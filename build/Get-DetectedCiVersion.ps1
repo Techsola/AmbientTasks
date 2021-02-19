@@ -80,7 +80,7 @@ function Get-DetectedCiVersion([switch] $Release) {
             $versionInfo.ProductVersion += "-$buildNumber.pr.$($buildMetadata.PullRequestNumber)"
             $versionInfo.PackageVersion += "-$buildNumber.pr.$($buildMetadata.PullRequestNumber)"
         }
-        elseif ($buildMetadata.BranchName -ne 'master') {
+        elseif ($buildMetadata.BranchName -ne 'main') {
             $prereleaseSegment = $buildMetadata.BranchName -replace '[^a-zA-Z0-9]+', '-'
 
             $versionInfo.ProductVersion += "-$buildNumber.$prereleaseSegment"
