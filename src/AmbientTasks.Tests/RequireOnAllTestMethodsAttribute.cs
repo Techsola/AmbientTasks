@@ -21,7 +21,7 @@ namespace Techsola
         {
             var missingTypes = attributeTypes
                 .Except(
-                    from data in test.Method.MethodInfo.GetCustomAttributesData()
+                    from data in test.Method!.MethodInfo.GetCustomAttributesData()
                     select data.AttributeType)
                 .ToList();
 
