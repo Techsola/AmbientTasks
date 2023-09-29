@@ -29,9 +29,4 @@
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="ApiContractGenerator.MSBuild" Version="1.0.0" PrivateAssets="all" />
-    <ApiContractAssembly Include="$(TargetPath)" />
-  </ItemGroup>
-
 </Project>
