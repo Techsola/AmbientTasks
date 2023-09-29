@@ -413,7 +413,7 @@ namespace Techsola
             }
 
             callCount.ShouldBe(0);
-            Should.Throw<Exception>(postedAction);
+            Should.Throw<Exception>(postedAction!);
             callCount.ShouldBe(1);
 
             postedAction.ShouldNotBeNull();
